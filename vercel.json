@@ -1,5 +1,5 @@
 {
   "framework": "vite",
-  "buildCommand": "npx vite build",
+  "buildCommand": "vite build",
   "installCommand": "npm install --legacy-peer-deps"
 }
