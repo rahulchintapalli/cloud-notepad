@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import Onboarding from './components/Onboarding';
-import Dashboard from './components/Dashboard';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
+
+const Onboarding = lazy(() => import('./components/Onboarding'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
 
 export interface UserPreferences {
   role: string | null;
@@ -72,28 +73,30 @@ function App() {
 
   return (
     <div className="dashboard-layout">
-      <AnimatePresence mode="wait">
-        {!onboardingComplete ? (
-          <Onboarding 
-            key="onboarding" 
-            onComplete={handleComplete} 
-            onSkip={handleSkip} 
-            onSync={(code) => { 
-              setSyncCode(code); 
-              localStorage.setItem('notepad_sync_code', code);
-              setOnboardingComplete(true);
-              localStorage.setItem('onboardingComplete', 'true');
-            }}
-          />
-        ) : (
-          <Dashboard 
-            key="dashboard" 
-            preferences={preferences} 
-            onBack={handleBackToSetup}
-            syncCode={syncCode}
-          />
-        )}
-      </AnimatePresence>
+      <Suspense fallback={<div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading...</div>}>
+        <AnimatePresence mode="wait">
+          {!onboardingComplete ? (
+            <Onboarding 
+              key="onboarding" 
+              onComplete={handleComplete} 
+              onSkip={handleSkip} 
+              onSync={(code) => { 
+                setSyncCode(code); 
+                localStorage.setItem('notepad_sync_code', code);
+                setOnboardingComplete(true);
+                localStorage.setItem('onboardingComplete', 'true');
+              }}
+            />
+          ) : (
+            <Dashboard 
+              key="dashboard" 
+              preferences={preferences} 
+              onBack={handleBackToSetup}
+              syncCode={syncCode}
+            />
+          )}
+        </AnimatePresence>
+      </Suspense>
       <div style={{ 
         position: 'fixed', 
         bottom: '16px', 
